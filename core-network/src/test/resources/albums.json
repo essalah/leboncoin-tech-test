@@ -1,0 +1,23 @@
+[
+  {
+    "albumId": 1,
+    "id": 1,
+    "title": "accusamus beatae ad facilis cum similique qui sunt",
+    "url": "https://placehold.co/600x600/92c952/white/png",
+    "thumbnailUrl": "https://placehold.co/150x150/92c952/white/png"
+  },
+  {
+    "albumId": 1,
+    "id": 2,
+    "title": "reprehenderit est deserunt velit ipsam",
+    "url": "https://placehold.co/600x600/771796/white/png",
+    "thumbnailUrl": "https://placehold.co/150x150/771796/white/png"
+  },
+  {
+    "albumId": 2,
+    "id": 51,
+    "title": "non sunt voluptatem placeat consequuntur rem incidunt",
+    "url": "https://placehold.co/600x600/8e973b/white/png",
+    "thumbnailUrl": "https://placehold.co/150x150/8e973b/white/png"
+  }
+]
