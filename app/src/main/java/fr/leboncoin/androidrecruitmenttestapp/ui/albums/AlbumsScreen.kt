@@ -69,10 +69,6 @@ fun AlbumsScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { contentPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
-            SearchField(
-                query = uiState.searchQuery,
-                onQueryChange = viewModel::setSearchQuery,
-            )
             FavoritesFilterRow(
                 showFavoritesOnly = uiState.showFavoritesOnly,
                 onShowFavoritesOnlyChange = viewModel::setShowFavoritesOnly,
@@ -81,6 +77,10 @@ fun AlbumsScreen(
                 availableGroups = albumGroups,
                 selectedGroup = uiState.selectedAlbumGroup,
                 onGroupSelected = viewModel::setSelectedAlbumGroup,
+            )
+            SearchField(
+                query = uiState.searchQuery,
+                onQueryChange = viewModel::setSearchQuery,
             )
 
             when {

@@ -38,6 +38,9 @@ class AlbumsViewModel @Inject constructor(
     // SEARCH_DEBOUNCE_MS before the unfiltered list ever appears. `onStart` re-emits the current
     // value immediately, ahead of collecting the debounced tail; `drop(1)` skips that same
     // value's duplicate replay from `searchQuery` itself so it isn't debounced a second time.
+    // This feeds `albums` only — `uiState.searchQuery` (what the TextField displays) is sourced
+    // from the raw `searchQuery` below instead, so the field reflects every keystroke immediately
+    // and doesn't fight the user's cursor while the debounce window is still pending.
     private val debouncedQuery = searchQuery
         .drop(1)
         .debounce(SEARCH_DEBOUNCE_MS)
@@ -76,11 +79,12 @@ class AlbumsViewModel @Inject constructor(
         filters,
         isRefreshing,
         errorMessage,
-    ) { albums, filters, refreshing, error ->
+        searchQuery,
+    ) { albums, filters, refreshing, error, query ->
         AlbumsUiState(
             albums = albums,
             showFavoritesOnly = filters.favoritesOnly,
-            searchQuery = filters.query,
+            searchQuery = query,
             selectedAlbumGroup = filters.albumGroup,
             isRefreshing = refreshing,
             errorMessage = error,
