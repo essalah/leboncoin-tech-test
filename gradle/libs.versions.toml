@@ -27,6 +27,10 @@ turbine = "1.2.1"
 mockwebserver = "5.1.0"
 androidxTestRunner = "1.7.0"
 
+# Added for per-app language switching (settings screen + persisted preference).
+appcompat = "1.7.1"
+datastorePreferences = "1.1.7"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -79,6 +83,10 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 
 # Navigation
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+
+# Per-app language switching
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
 
 # Test-only
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }

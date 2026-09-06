@@ -6,6 +6,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import fr.leboncoin.data.repository.AlbumRepository
 import fr.leboncoin.data.repository.AlbumRepositoryImpl
+import fr.leboncoin.data.repository.LanguagePreferencesRepository
+import fr.leboncoin.data.repository.LanguagePreferencesRepositoryImpl
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -13,4 +15,7 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindAlbumRepository(impl: AlbumRepositoryImpl): AlbumRepository
+
+    @Binds
+    abstract fun bindLanguagePreferencesRepository(impl: LanguagePreferencesRepositoryImpl): LanguagePreferencesRepository
 }

@@ -13,9 +13,16 @@ import kotlinx.coroutines.flow.Flow
  */
 interface AlbumRepository {
 
-    fun observeAlbums(): Flow<List<Album>>
+    /**
+     * @param query case-insensitive substring match against the title or the numeric
+     * album/track id; empty disables text filtering.
+     * @param favoritesOnly restrict to favorited albums.
+     * @param albumGroup restrict to one `albumId` group; `null` disables this filter.
+     */
+    fun observeAlbums(query: String = "", favoritesOnly: Boolean = false, albumGroup: Int? = null): Flow<List<Album>>
 
-    fun observeFavoriteAlbums(): Flow<List<Album>>
+    /** Distinct album group ids present in the cache, to populate a group filter's options. */
+    fun observeAlbumGroups(): Flow<List<Int>>
 
     fun observeAlbum(id: Int): Flow<Album?>
 

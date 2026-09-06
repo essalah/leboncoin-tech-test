@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Declares the languages the app ships translations for, so they also show up in the
+     system's own per-app language picker (Settings > Apps > this app > Language), backed by the
+     same AppCompatDelegate/LocaleManager mechanism as the in-app Settings screen. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="fr" />
+</locale-config>

@@ -16,11 +16,10 @@ class AlbumRepositoryImpl @Inject constructor(
     private val albumDao: AlbumDao,
 ) : AlbumRepository {
 
-    override fun observeAlbums(): Flow<List<Album>> =
-        albumDao.observeAll().map { entities -> entities.map { it.toDomain() } }
+    override fun observeAlbums(query: String, favoritesOnly: Boolean, albumGroup: Int?): Flow<List<Album>> =
+        albumDao.observeAlbums(query, favoritesOnly, albumGroup).map { entities -> entities.map { it.toDomain() } }
 
-    override fun observeFavoriteAlbums(): Flow<List<Album>> =
-        albumDao.observeFavorites().map { entities -> entities.map { it.toDomain() } }
+    override fun observeAlbumGroups(): Flow<List<Int>> = albumDao.observeAlbumGroups()
 
     override fun observeAlbum(id: Int): Flow<Album?> =
         albumDao.observeById(id).map { it?.toDomain() }

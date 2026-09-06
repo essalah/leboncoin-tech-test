@@ -9,10 +9,10 @@ import org.junit.Test
 
 class AlbumRepositoryTest {
 
-    private fun dto(id: Int) = AlbumDto(
+    private fun dto(id: Int, albumId: Int = 1, title: String = "title-$id") = AlbumDto(
         id = id,
-        albumId = 1,
-        title = "title-$id",
+        albumId = albumId,
+        title = title,
         url = "https://example.com/$id.png",
         thumbnailUrl = "https://example.com/$id-thumb.png",
     )
@@ -63,13 +63,88 @@ class AlbumRepositoryTest {
     }
 
     @Test
-    fun `setFavorite is reflected in observeFavoriteAlbums`() = runTest {
+    fun `setFavorite is reflected when observing favorites only`() = runTest {
         val dao = FakeAlbumDao()
         val repository = AlbumRepositoryImpl(FakeAlbumApiService { listOf(dto(1), dto(2)) }, dao)
         repository.refresh()
 
         repository.setFavorite(id = 2, isFavorite = true)
 
-        assertEquals(listOf(2), repository.observeFavoriteAlbums().first().map { it.id })
+        assertEquals(listOf(2), repository.observeAlbums(favoritesOnly = true).first().map { it.id })
+    }
+
+    @Test
+    fun `observeAlbums query matches title text case-insensitively`() = runTest {
+        val dao = FakeAlbumDao()
+        val repository = AlbumRepositoryImpl(
+            FakeAlbumApiService { listOf(dto(1, title = "Lorem Ipsum"), dto(2, title = "Something else")) },
+            dao,
+        )
+        repository.refresh()
+
+        val result = repository.observeAlbums(query = "lorem").first()
+
+        assertEquals(listOf(1), result.map { it.id })
+    }
+
+    @Test
+    fun `observeAlbums query also matches the numeric album or track id`() = runTest {
+        val dao = FakeAlbumDao()
+        val repository = AlbumRepositoryImpl(
+            FakeAlbumApiService { listOf(dto(51, albumId = 2, title = "unrelated"), dto(2)) },
+            dao,
+        )
+        repository.refresh()
+
+        val result = repository.observeAlbums(query = "51").first()
+
+        assertEquals(listOf(51), result.map { it.id })
+    }
+
+    @Test
+    fun `observeAlbums restricts to a single album group`() = runTest {
+        val dao = FakeAlbumDao()
+        val repository = AlbumRepositoryImpl(
+            FakeAlbumApiService { listOf(dto(1, albumId = 1), dto(2, albumId = 2), dto(3, albumId = 1)) },
+            dao,
+        )
+        repository.refresh()
+
+        val result = repository.observeAlbums(albumGroup = 1).first()
+
+        assertEquals(listOf(1, 3), result.map { it.id })
+    }
+
+    @Test
+    fun `search, favorites-only and album group all compose together`() = runTest {
+        val dao = FakeAlbumDao()
+        val repository = AlbumRepositoryImpl(
+            FakeAlbumApiService {
+                listOf(
+                    dto(1, albumId = 1, title = "lorem ipsum"),
+                    dto(2, albumId = 1, title = "lorem dolor"),
+                    dto(3, albumId = 2, title = "lorem sit"),
+                )
+            },
+            dao,
+        )
+        repository.refresh()
+        repository.setFavorite(id = 2, isFavorite = true)
+
+        val result = repository.observeAlbums(query = "lorem", favoritesOnly = true, albumGroup = 1).first()
+
+        assertEquals(listOf(2), result.map { it.id })
+    }
+
+    @Test
+    fun `observeAlbumGroups returns the distinct album ids present in the cache`() = runTest {
+        val dao = FakeAlbumDao()
+        val repository = AlbumRepositoryImpl(
+            FakeAlbumApiService { listOf(dto(1, albumId = 3), dto(2, albumId = 1), dto(3, albumId = 3)) },
+            dao,
+        )
+        repository.refresh()
+
+        assertEquals(listOf(1, 3), repository.observeAlbumGroups().first())
     }
 }

@@ -6,19 +6,28 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.adevinta.spark.components.image.Illustration
@@ -26,8 +35,14 @@ import com.adevinta.spark.components.scaffold.Scaffold
 import com.adevinta.spark.components.snackbars.SnackbarHost
 import com.adevinta.spark.components.snackbars.SnackbarHostState
 import com.adevinta.spark.components.text.Text
+import com.adevinta.spark.components.textfields.TextField
+import com.adevinta.spark.icons.FavoriteOutline
+import com.adevinta.spark.icons.SearchOutline
+import com.adevinta.spark.icons.SparkIcons
+import com.adevinta.spark.icons.WarningOutline
 import fr.leboncoin.androidrecruitmenttestapp.R
 import fr.leboncoin.data.model.Album
+import com.adevinta.spark.components.progress.CircularProgressIndicator
 
 private const val EMPTY_STATE_ILLUSTRATION_ALPHA = 0.6f
 
@@ -36,6 +51,7 @@ private const val EMPTY_STATE_ILLUSTRATION_ALPHA = 0.6f
 fun AlbumsScreen(
     viewModel: AlbumsViewModel,
     onAlbumSelected: (Album) -> Unit,
+    onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // Fix: replaces `LaunchedEffect(Unit) { viewModel.loadAlbums() }`. Loading is now kicked
@@ -43,31 +59,55 @@ fun AlbumsScreen(
     // re-triggered every time this screen re-enters composition (e.g. navigating back from the
     // detail screen) the ViewModel, not the UI, owns "when do we fetch".
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val albumGroups by viewModel.albumGroups.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val fallbackErrorMessage = stringResource(R.string.error_refresh_albums_failed)
 
     // Spark's lint rules (spark-lints, run as part of :app:lintDebug) flag raw Material
-    // Composables that have a direct Spark replacement Snackbar/SnackbarHost among them —
+    // Composables that have a direct Spark replacement Snackbar/SnackbarHost among them
     // so the error banner goes through Spark's SnackbarHostState instead of a plain
     // `if (error != null) Snackbar(...)`.
     LaunchedEffect(uiState.errorMessage) {
         val message = uiState.errorMessage ?: return@LaunchedEffect
-        snackbarHostState.showSnackbar(message)
+        snackbarHostState.showSnackbar(message.ifEmpty { fallbackErrorMessage })
         viewModel.dismissError()
     }
 
     Scaffold(
         modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.app_name)) },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.cd_open_settings))
+                    }
+                },
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { contentPadding ->
         Column(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
-            FilterRow(
+            FavoritesFilterRow(
                 showFavoritesOnly = uiState.showFavoritesOnly,
                 onShowFavoritesOnlyChange = viewModel::setShowFavoritesOnly,
+            )
+            AlbumGroupFilterRow(
+                availableGroups = albumGroups,
+                selectedGroup = uiState.selectedAlbumGroup,
+                onGroupSelected = viewModel::setSelectedAlbumGroup,
+            )
+            SearchField(
+                query = uiState.searchQuery,
+                onQueryChange = viewModel::setSearchQuery,
             )
 
             when {
                 uiState.albums.isEmpty() && uiState.isRefreshing -> LoadingState()
-                uiState.albums.isEmpty() -> EmptyState(showingFavorites = uiState.showFavoritesOnly)
+                uiState.albums.isEmpty() -> EmptyState(
+                    isFiltering = uiState.searchQuery.isNotBlank() || uiState.selectedAlbumGroup != null,
+                    showingFavorites = uiState.showFavoritesOnly,
+                )
                 else -> AlbumsList(
                     albums = uiState.albums,
                     onAlbumSelected = onAlbumSelected,
@@ -76,6 +116,32 @@ fun AlbumsScreen(
             }
         }
     }
+}
+
+@Composable
+private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
+    // Spark's own TextField, not Material3's `SearchBar` same design-system-consistency
+    // reason `Text`/`Snackbar` were switched to Spark equivalents earlier.
+    TextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        placeholder = stringResource(R.string.search_albums_placeholder),
+        leadingContent = {
+            Icon(imageVector = Icons.Filled.Search, contentDescription = null)
+        },
+        trailingContent = if (query.isNotEmpty()) {
+            {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(imageVector = Icons.Filled.Clear, contentDescription = stringResource(R.string.cd_clear_search))
+                }
+            }
+        } else {
+            null
+        },
+    )
 }
 
 @Composable
@@ -99,7 +165,7 @@ private fun AlbumsList(
 }
 
 @Composable
-private fun FilterRow(showFavoritesOnly: Boolean, onShowFavoritesOnlyChange: (Boolean) -> Unit) {
+private fun FavoritesFilterRow(showFavoritesOnly: Boolean, onShowFavoritesOnlyChange: (Boolean) -> Unit) {
     Row(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -107,13 +173,44 @@ private fun FilterRow(showFavoritesOnly: Boolean, onShowFavoritesOnlyChange: (Bo
         FilterChip(
             selected = !showFavoritesOnly,
             onClick = { onShowFavoritesOnlyChange(false) },
-            label = { Text("All") },
+            label = { Text(stringResource(R.string.filter_all)) },
         )
         FilterChip(
             selected = showFavoritesOnly,
             onClick = { onShowFavoritesOnlyChange(true) },
-            label = { Text("Favorites") },
+            label = { Text(stringResource(R.string.filter_favorites)) },
         )
+    }
+}
+
+@Composable
+private fun AlbumGroupFilterRow(
+    availableGroups: List<Int>,
+    selectedGroup: Int?,
+    onGroupSelected: (Int?) -> Unit,
+) {
+    if (availableGroups.isEmpty()) return
+
+    // LazyRow, not a plain Row: the real dataset can have on the order of a hundred distinct
+    // album groups a plain Row would measure and lay out every chip whether visible or not.
+    LazyRow(
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item(key = "all") {
+            FilterChip(
+                selected = selectedGroup == null,
+                onClick = { onGroupSelected(null) },
+                label = { Text(stringResource(R.string.filter_all_albums)) },
+            )
+        }
+        items(items = availableGroups, key = { it }) { group ->
+            FilterChip(
+                selected = selectedGroup == group,
+                onClick = { onGroupSelected(group) },
+                label = { Text(stringResource(R.string.filter_album_group, group)) },
+            )
+        }
     }
 }
 
@@ -125,25 +222,27 @@ private fun LoadingState() {
 }
 
 @Composable
-private fun EmptyState(showingFavorites: Boolean) {
+private fun EmptyState(isFiltering: Boolean, showingFavorites: Boolean) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // Reuses the illustration that used to sit behind DetailsActivity's "work in
-            // progress" placeholder, instead of leaving it an orphaned, unused drawable now
-            // that the detail screen has real content.
+            // Icon matches the message below for each case, rather than a single generic
+            // illustration, so the empty state reads as informative instead of unfinished.
+            //
+            // Checked first: an active search/album-group filter with no matches isn't an
+            // offline problem, and showing "you're offline" here would be actively
+            // misleading.
+            val (icon, message) = when {
+                isFiltering -> SparkIcons.SearchOutline to stringResource(R.string.empty_state_no_search_results)
+                showingFavorites -> SparkIcons.FavoriteOutline to stringResource(R.string.empty_state_no_favorites)
+                else -> SparkIcons.WarningOutline to stringResource(R.string.empty_state_offline)
+            }
             Illustration(
                 modifier = Modifier.padding(32.dp),
-                painter = painterResource(id = R.drawable.work_in_progress),
+                sparkIcon = icon,
                 contentDescription = null,
                 alpha = EMPTY_STATE_ILLUSTRATION_ALPHA,
             )
-            Text(
-                text = if (showingFavorites) {
-                    "You haven't favorited any album yet"
-                } else {
-                    "No albums available pull down to retry once you're back online"
-                },
-            )
+            Text(text = message)
         }
     }
 }

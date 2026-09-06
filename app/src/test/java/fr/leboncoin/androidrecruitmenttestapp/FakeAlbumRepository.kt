@@ -14,9 +14,19 @@ class FakeAlbumRepository(
     var refreshCallCount = 0
         private set
 
-    override fun observeAlbums() = state
+    override fun observeAlbums(query: String, favoritesOnly: Boolean, albumGroup: Int?) = state.map { albums ->
+        albums
+            .filter { !favoritesOnly || it.isFavorite }
+            .filter { albumGroup == null || it.albumId == albumGroup }
+            .filter {
+                query.isEmpty() ||
+                    it.title.contains(query, ignoreCase = true) ||
+                    it.albumId.toString().contains(query) ||
+                    it.id.toString().contains(query)
+            }
+    }
 
-    override fun observeFavoriteAlbums() = state.map { albums -> albums.filter { it.isFavorite } }
+    override fun observeAlbumGroups() = state.map { albums -> albums.map { it.albumId }.distinct().sorted() }
 
     override fun observeAlbum(id: Int) = state.map { albums -> albums.find { it.id == id } }
 

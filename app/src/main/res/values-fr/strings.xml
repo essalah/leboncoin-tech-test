@@ -1,0 +1,40 @@
+<resources>
+    <!-- app_name intentionally not overridden here: it's a proper noun, kept identical across
+         locales, so it falls back to the default values/strings.xml entry. -->
+
+    <!-- Search -->
+    <string name="search_albums_placeholder">Rechercher des albums…</string>
+    <string name="cd_clear_search">Effacer la recherche</string>
+
+    <!-- Filters -->
+    <string name="filter_all">Tous</string>
+    <string name="filter_favorites">Favoris</string>
+    <string name="filter_all_albums">Tous les albums</string>
+    <string name="filter_album_group">Album %1$d</string>
+
+    <!-- Empty states -->
+    <string name="empty_state_no_search_results">Aucun album ne correspond à votre recherche</string>
+    <string name="empty_state_no_favorites">Vous n\'avez pas encore ajouté d\'album à vos favoris</string>
+    <string name="empty_state_offline">Aucun album disponible. Tirez vers le bas pour réessayer une fois de retour en ligne.</string>
+
+    <!-- Favorite toggle (shared by AlbumItem + DetailScreen) -->
+    <string name="cd_add_to_favorites">Ajouter aux favoris</string>
+    <string name="cd_remove_from_favorites">Retirer des favoris</string>
+
+    <!-- Album/track chips (shared by AlbumItem + DetailScreen) -->
+    <string name="album_number_label">Album n°%1$d</string>
+    <string name="track_number_label">Piste n°%1$d</string>
+
+    <!-- Detail screen -->
+    <string name="cd_navigate_back">Retour</string>
+    <string name="detail_album_unavailable_offline">Album indisponible hors ligne pour le moment</string>
+
+    <!-- Errors -->
+    <string name="error_refresh_albums_failed">Impossible d\'actualiser les albums</string>
+
+    <!-- Settings -->
+    <string name="cd_open_settings">Paramètres</string>
+    <string name="settings_title">Paramètres</string>
+    <string name="language_english">Anglais</string>
+    <string name="language_french">Français</string>
+</resources>

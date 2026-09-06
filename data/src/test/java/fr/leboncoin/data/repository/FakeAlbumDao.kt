@@ -7,18 +7,30 @@ import kotlinx.coroutines.flow.map
 
 /**
  * In-memory stand-in for [AlbumDao], good enough to unit test [AlbumRepositoryImpl] without a
- * real SQLite database. The actual generated SQL is covered separately by the instrumented
- * `AlbumDaoTest` in :core-database.
+ * real SQLite database. The actual generated SQL including the search/favorites/album-group
+ * query is covered separately by the instrumented `AlbumDaoTest` in :core-database; this fake
+ * just mirrors that query's *behavior* in plain Kotlin so repository-level tests don't need a
+ * device.
  */
 class FakeAlbumDao : AlbumDao {
 
     private val state = MutableStateFlow<List<AlbumEntity>>(emptyList())
 
-    override fun observeAll() = state.map { albums -> albums.sortedBy { it.id } }
+    override fun observeAlbums(query: String, favoritesOnly: Boolean, albumGroup: Int?) =
+        state.map { albums ->
+            albums
+                .filter { !favoritesOnly || it.isFavorite }
+                .filter { albumGroup == null || it.albumId == albumGroup }
+                .filter {
+                    query.isEmpty() ||
+                        it.title.contains(query, ignoreCase = true) ||
+                        it.albumId.toString().contains(query) ||
+                        it.id.toString().contains(query)
+                }
+                .sortedBy { it.id }
+        }
 
-    override fun observeFavorites() = state.map { albums ->
-        albums.filter { it.isFavorite }.sortedBy { it.id }
-    }
+    override fun observeAlbumGroups() = state.map { albums -> albums.map { it.albumId }.distinct().sorted() }
 
     override fun observeById(id: Int) = state.map { albums -> albums.find { it.id == id } }
 

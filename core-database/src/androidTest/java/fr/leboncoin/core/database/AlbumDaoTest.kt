@@ -15,7 +15,8 @@ import org.junit.runner.RunWith
 /**
  * Runs against a real, in-memory SQLite database (not a fake) so it also exercises the actual
  * SQL Room generates from the annotations in [AlbumDao] a pure-Kotlin fake couldn't catch a
- * typo'd `@Query`.
+ * typo'd `@Query`. That matters especially for `observeAlbums`, which packs three independent
+ * filters (search text, favorites-only, album group) into one hand-written query.
  */
 @RunWith(AndroidJUnit4::class)
 class AlbumDaoTest {
@@ -37,14 +38,21 @@ class AlbumDaoTest {
         database.close()
     }
 
-    private fun album(id: Int, isFavorite: Boolean = false) = AlbumEntity(
+    private fun album(
+        id: Int,
+        albumId: Int = 1,
+        title: String = "title-$id",
+        isFavorite: Boolean = false,
+    ) = AlbumEntity(
         id = id,
-        albumId = 1,
-        title = "title-$id",
+        albumId = albumId,
+        title = title,
         url = "https://example.com/$id.png",
         thumbnailUrl = "https://example.com/$id-thumb.png",
         isFavorite = isFavorite,
     )
+
+    private fun AlbumDao.observeAll() = observeAlbums(query = "", favoritesOnly = false, albumGroup = null)
 
     @Test
     fun upsertAll_thenObserveAll_returnsInsertedRowsOrderedById() = runTest {
@@ -66,12 +74,12 @@ class AlbumDaoTest {
     }
 
     @Test
-    fun setFavorite_persistsFlag_andIsReflectedInObserveFavorites() = runTest {
+    fun setFavorite_persistsFlag_andIsReflectedInObserveAlbumsFavoritesOnly() = runTest {
         dao.upsertAll(listOf(album(1), album(2)))
 
         dao.setFavorite(id = 1, isFavorite = true)
 
-        val favorites = dao.observeFavorites().first()
+        val favorites = dao.observeAlbums(query = "", favoritesOnly = true, albumGroup = null).first()
         assertEquals(listOf(1), favorites.map { it.id })
         assertTrue(dao.getFavoriteIds().contains(1))
     }
@@ -90,5 +98,55 @@ class AlbumDaoTest {
 
         val result = dao.observeById(1).first()
         assertTrue(result?.isFavorite == false)
+    }
+
+    @Test
+    fun observeAlbums_query_matchesTitleCaseInsensitively() = runTest {
+        dao.upsertAll(listOf(album(1, title = "Lorem Ipsum"), album(2, title = "Something else")))
+
+        val result = dao.observeAlbums(query = "lorem", favoritesOnly = false, albumGroup = null).first()
+
+        assertEquals(listOf(1), result.map { it.id })
+    }
+
+    @Test
+    fun observeAlbums_query_alsoMatchesTheNumericAlbumOrTrackId() = runTest {
+        dao.upsertAll(listOf(album(51, albumId = 2, title = "unrelated"), album(2)))
+
+        val result = dao.observeAlbums(query = "51", favoritesOnly = false, albumGroup = null).first()
+
+        assertEquals(listOf(51), result.map { it.id })
+    }
+
+    @Test
+    fun observeAlbums_albumGroup_restrictsToThatGroup() = runTest {
+        dao.upsertAll(listOf(album(1, albumId = 1), album(2, albumId = 2), album(3, albumId = 1)))
+
+        val result = dao.observeAlbums(query = "", favoritesOnly = false, albumGroup = 1).first()
+
+        assertEquals(listOf(1, 3), result.map { it.id })
+    }
+
+    @Test
+    fun observeAlbums_query_favoritesOnly_andAlbumGroup_composeTogether() = runTest {
+        dao.upsertAll(
+            listOf(
+                album(1, albumId = 1, title = "lorem ipsum"),
+                album(2, albumId = 1, title = "lorem dolor"),
+                album(3, albumId = 2, title = "lorem sit"),
+            ),
+        )
+        dao.setFavorite(id = 2, isFavorite = true)
+
+        val result = dao.observeAlbums(query = "lorem", favoritesOnly = true, albumGroup = 1).first()
+
+        assertEquals(listOf(2), result.map { it.id })
+    }
+
+    @Test
+    fun observeAlbumGroups_returnsDistinctGroupsOrdered() = runTest {
+        dao.upsertAll(listOf(album(1, albumId = 3), album(2, albumId = 1), album(3, albumId = 3)))
+
+        assertEquals(listOf(1, 3), dao.observeAlbumGroups().first())
     }
 }
