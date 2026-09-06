@@ -12,10 +12,13 @@ import fr.leboncoin.androidrecruitmenttestapp.ui.albums.AlbumsScreen
 import fr.leboncoin.androidrecruitmenttestapp.ui.albums.AlbumsViewModel
 import fr.leboncoin.androidrecruitmenttestapp.ui.detail.DetailScreen
 import fr.leboncoin.androidrecruitmenttestapp.ui.detail.DetailViewModel
+import fr.leboncoin.androidrecruitmenttestapp.ui.settings.SettingsScreen
+import fr.leboncoin.androidrecruitmenttestapp.ui.settings.SettingsViewModel
 
 const val ALBUM_ID_ARG = "albumId"
 private const val ALBUMS_ROUTE = "albums"
 private const val DETAIL_ROUTE = "detail/{$ALBUM_ID_ARG}"
+private const val SETTINGS_ROUTE = "settings"
 
 fun detailRoute(albumId: Int) = "detail/$albumId"
 
@@ -35,6 +38,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     viewModel.onAlbumClicked(album)
                     navController.navigate(detailRoute(album.id))
                 },
+                onOpenSettings = { navController.navigate(SETTINGS_ROUTE) },
             )
         }
         composable(
@@ -43,6 +47,13 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         ) {
             val viewModel: DetailViewModel = hiltViewModel()
             DetailScreen(
+                viewModel = viewModel,
+                onBack = navController::popBackStack,
+            )
+        }
+        composable(SETTINGS_ROUTE) {
+            val viewModel: SettingsViewModel = hiltViewModel()
+            SettingsScreen(
                 viewModel = viewModel,
                 onBack = navController::popBackStack,
             )
