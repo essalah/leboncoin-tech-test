@@ -27,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +36,10 @@ import com.adevinta.spark.components.snackbars.SnackbarHost
 import com.adevinta.spark.components.snackbars.SnackbarHostState
 import com.adevinta.spark.components.text.Text
 import com.adevinta.spark.components.textfields.TextField
+import com.adevinta.spark.icons.FavoriteOutline
+import com.adevinta.spark.icons.SearchOutline
+import com.adevinta.spark.icons.SparkIcons
+import com.adevinta.spark.icons.WarningOutline
 import fr.leboncoin.androidrecruitmenttestapp.R
 import fr.leboncoin.data.model.Album
 import com.adevinta.spark.components.progress.CircularProgressIndicator
@@ -222,25 +225,24 @@ private fun LoadingState() {
 private fun EmptyState(isFiltering: Boolean, showingFavorites: Boolean) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // Reuses the illustration that used to sit behind DetailsActivity's "work in
-            // progress" placeholder, instead of leaving it an orphaned, unused drawable now
-            // that the detail screen has real content.
+            // Icon matches the message below for each case, rather than a single generic
+            // illustration, so the empty state reads as informative instead of unfinished.
+            //
+            // Checked first: an active search/album-group filter with no matches isn't an
+            // offline problem, and showing "you're offline" here would be actively
+            // misleading.
+            val (icon, message) = when {
+                isFiltering -> SparkIcons.SearchOutline to stringResource(R.string.empty_state_no_search_results)
+                showingFavorites -> SparkIcons.FavoriteOutline to stringResource(R.string.empty_state_no_favorites)
+                else -> SparkIcons.WarningOutline to stringResource(R.string.empty_state_offline)
+            }
             Illustration(
                 modifier = Modifier.padding(32.dp),
-                painter = painterResource(id = R.drawable.work_in_progress),
+                sparkIcon = icon,
                 contentDescription = null,
                 alpha = EMPTY_STATE_ILLUSTRATION_ALPHA,
             )
-            Text(
-                text = when {
-                    // Checked first: an active search/album-group filter with no matches isn't
-                    // an offline problem, and showing "you're offline" here would be actively
-                    // misleading.
-                    isFiltering -> stringResource(R.string.empty_state_no_search_results)
-                    showingFavorites -> stringResource(R.string.empty_state_no_favorites)
-                    else -> stringResource(R.string.empty_state_offline)
-                },
-            )
+            Text(text = message)
         }
     }
 }
