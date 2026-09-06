@@ -28,6 +28,7 @@
     <!-- Detail screen -->
     <string name="cd_navigate_back">Back</string>
     <string name="detail_album_unavailable_offline">Album not available offline yet</string>
+    <string name="detail_pane_select_album_prompt">Select an album to see its details</string>
 
     <!-- Errors -->
     <string name="error_refresh_albums_failed">Couldn\'t refresh albums</string>
