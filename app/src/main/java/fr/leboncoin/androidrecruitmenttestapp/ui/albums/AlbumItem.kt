@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -29,6 +30,7 @@ import com.adevinta.spark.SparkTheme
 import com.adevinta.spark.components.card.Card
 import com.adevinta.spark.components.chips.ChipTinted
 import com.adevinta.spark.components.text.Text
+import fr.leboncoin.androidrecruitmenttestapp.R
 import fr.leboncoin.data.model.Album
 
 @OptIn(ExperimentalSparkApi::class)
@@ -84,9 +86,9 @@ fun AlbumItem(
                         Icon(
                             imageVector = if (album.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                             contentDescription = if (album.isFavorite) {
-                                "Remove from favorites"
+                                stringResource(R.string.cd_remove_from_favorites)
                             } else {
-                                "Add to favorites"
+                                stringResource(R.string.cd_add_to_favorites)
                             },
                             tint = if (album.isFavorite) SparkTheme.colors.accent else SparkTheme.colors.outline,
                         )
@@ -99,8 +101,8 @@ fun AlbumItem(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    ChipTinted(text = "Album #${album.albumId}")
-                    ChipTinted(text = "Track #${album.id}")
+                    ChipTinted(text = stringResource(R.string.album_number_label, album.albumId))
+                    ChipTinted(text = stringResource(R.string.track_number_label, album.id))
                 }
             }
         }

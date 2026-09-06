@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.adevinta.spark.components.image.Illustration
@@ -54,14 +55,15 @@ fun AlbumsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val albumGroups by viewModel.albumGroups.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val fallbackErrorMessage = stringResource(R.string.error_refresh_albums_failed)
 
     // Spark's lint rules (spark-lints, run as part of :app:lintDebug) flag raw Material
-    // Composables that have a direct Spark replacement Snackbar/SnackbarHost among them 
+    // Composables that have a direct Spark replacement Snackbar/SnackbarHost among them
     // so the error banner goes through Spark's SnackbarHostState instead of a plain
     // `if (error != null) Snackbar(...)`.
     LaunchedEffect(uiState.errorMessage) {
         val message = uiState.errorMessage ?: return@LaunchedEffect
-        snackbarHostState.showSnackbar(message)
+        snackbarHostState.showSnackbar(message.ifEmpty { fallbackErrorMessage })
         viewModel.dismissError()
     }
 
@@ -110,14 +112,14 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        placeholder = "Search albums...",
+        placeholder = stringResource(R.string.search_albums_placeholder),
         leadingContent = {
             Icon(imageVector = Icons.Filled.Search, contentDescription = null)
         },
         trailingContent = if (query.isNotEmpty()) {
             {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(imageVector = Icons.Filled.Clear, contentDescription = "Clear search")
+                    Icon(imageVector = Icons.Filled.Clear, contentDescription = stringResource(R.string.cd_clear_search))
                 }
             }
         } else {
@@ -155,12 +157,12 @@ private fun FavoritesFilterRow(showFavoritesOnly: Boolean, onShowFavoritesOnlyCh
         FilterChip(
             selected = !showFavoritesOnly,
             onClick = { onShowFavoritesOnlyChange(false) },
-            label = { Text("All") },
+            label = { Text(stringResource(R.string.filter_all)) },
         )
         FilterChip(
             selected = showFavoritesOnly,
             onClick = { onShowFavoritesOnlyChange(true) },
-            label = { Text("Favorites") },
+            label = { Text(stringResource(R.string.filter_favorites)) },
         )
     }
 }
@@ -183,14 +185,14 @@ private fun AlbumGroupFilterRow(
             FilterChip(
                 selected = selectedGroup == null,
                 onClick = { onGroupSelected(null) },
-                label = { Text("All albums") },
+                label = { Text(stringResource(R.string.filter_all_albums)) },
             )
         }
         items(items = availableGroups, key = { it }) { group ->
             FilterChip(
                 selected = selectedGroup == group,
                 onClick = { onGroupSelected(group) },
-                label = { Text("Album $group") },
+                label = { Text(stringResource(R.string.filter_album_group, group)) },
             )
         }
     }
@@ -221,9 +223,9 @@ private fun EmptyState(isFiltering: Boolean, showingFavorites: Boolean) {
                     // Checked first: an active search/album-group filter with no matches isn't
                     // an offline problem, and showing "you're offline" here would be actively
                     // misleading.
-                    isFiltering -> "No albums match your search"
-                    showingFavorites -> "You haven't favorited any album yet"
-                    else -> "No albums available pull down to retry once you're back online"
+                    isFiltering -> stringResource(R.string.empty_state_no_search_results)
+                    showingFavorites -> stringResource(R.string.empty_state_no_favorites)
+                    else -> stringResource(R.string.empty_state_offline)
                 },
             )
         }

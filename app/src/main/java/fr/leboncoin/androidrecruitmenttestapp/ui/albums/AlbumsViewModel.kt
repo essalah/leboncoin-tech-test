@@ -108,7 +108,7 @@ class AlbumsViewModel @Inject constructor(
             // all. A failed refresh is now surfaced as a message, without ever clearing
             // `albums`: whatever was last cached stays on screen.
             repository.refresh()
-                .onFailure { errorMessage.value = it.message ?: "Couldn't refresh albums" }
+                .onFailure { errorMessage.value = it.message ?: "" }
             isRefreshing.value = false
         }
     }
