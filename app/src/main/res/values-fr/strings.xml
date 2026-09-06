@@ -28,6 +28,7 @@
     <!-- Detail screen -->
     <string name="cd_navigate_back">Retour</string>
     <string name="detail_album_unavailable_offline">Album indisponible hors ligne pour le moment</string>
+    <string name="detail_pane_select_album_prompt">Sélectionnez un album pour voir ses détails</string>
 
     <!-- Errors -->
     <string name="error_refresh_albums_failed">Impossible d\'actualiser les albums</string>

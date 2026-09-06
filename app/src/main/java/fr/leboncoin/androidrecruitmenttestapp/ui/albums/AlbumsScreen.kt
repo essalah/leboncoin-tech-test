@@ -53,6 +53,10 @@ fun AlbumsScreen(
     onAlbumSelected: (Album) -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
+    // Only set by `AlbumsListDetailPane` (the two-pane, wide-screen layout) so the row for the
+    // album currently shown in the detail pane can be highlighted. Left null for the regular
+    // single-pane navigation flow, where there's no such concept and every row renders unselected.
+    selectedAlbumId: Int? = null,
 ) {
     // Fix: replaces `LaunchedEffect(Unit) { viewModel.loadAlbums() }`. Loading is now kicked
     // off once from the ViewModel's `init` block instead of from the Composable, so it isn't
@@ -110,6 +114,7 @@ fun AlbumsScreen(
                 )
                 else -> AlbumsList(
                     albums = uiState.albums,
+                    selectedAlbumId = selectedAlbumId,
                     onAlbumSelected = onAlbumSelected,
                     onFavoriteToggle = viewModel::toggleFavorite,
                 )
@@ -147,6 +152,7 @@ private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
 @Composable
 private fun AlbumsList(
     albums: List<Album>,
+    selectedAlbumId: Int?,
     onAlbumSelected: (Album) -> Unit,
     onFavoriteToggle: (Album) -> Unit,
 ) {
@@ -157,6 +163,7 @@ private fun AlbumsList(
         items(items = albums, key = { album -> album.id }) { album ->
             AlbumItem(
                 album = album,
+                isSelected = album.id == selectedAlbumId,
                 onItemSelected = onAlbumSelected,
                 onFavoriteToggle = onFavoriteToggle,
             )

@@ -1,5 +1,6 @@
 package fr.leboncoin.androidrecruitmenttestapp.ui.albums
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +29,7 @@ import coil3.request.crossfade
 import com.adevinta.spark.ExperimentalSparkApi
 import com.adevinta.spark.SparkTheme
 import com.adevinta.spark.components.card.Card
+import com.adevinta.spark.components.card.CardDefaults
 import com.adevinta.spark.components.chips.ChipTinted
 import com.adevinta.spark.components.text.Text
 import fr.leboncoin.androidrecruitmenttestapp.R
@@ -40,6 +42,9 @@ fun AlbumItem(
     onItemSelected: (Album) -> Unit,
     onFavoriteToggle: (Album) -> Unit,
     modifier: Modifier = Modifier,
+    // Set when this row is the one currently open in the list-detail split view's detail pane
+    // (see `AlbumsListDetailPane`); always false in the regular single-pane navigation flow.
+    isSelected: Boolean = false,
 ) {
     Card(
         modifier = modifier
@@ -47,6 +52,12 @@ fun AlbumItem(
             .height(120.dp)
             .padding(horizontal = 16.dp),
         onClick = { onItemSelected(album) },
+        colors = if (isSelected) {
+            CardDefaults.cardColors(containerColor = SparkTheme.colors.accentContainer)
+        } else {
+            CardDefaults.cardColors()
+        },
+        border = if (isSelected) BorderStroke(2.dp, SparkTheme.colors.accent) else null,
     ) {
         Row {
             AsyncImage(
