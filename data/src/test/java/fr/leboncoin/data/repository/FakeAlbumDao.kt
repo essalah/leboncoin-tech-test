@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.map
 
 /**
  * In-memory stand-in for [AlbumDao], good enough to unit test [AlbumRepositoryImpl] without a
- * real SQLite database. The actual generated SQL — including the search/favorites/album-group
- * query — is covered separately by the instrumented `AlbumDaoTest` in :core-database; this fake
+ * real SQLite database. The actual generated SQL including the search/favorites/album-group
+ * query is covered separately by the instrumented `AlbumDaoTest` in :core-database; this fake
  * just mirrors that query's *behavior* in plain Kotlin so repository-level tests don't need a
  * device.
  */

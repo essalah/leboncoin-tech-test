@@ -38,7 +38,7 @@ class AlbumsViewModel @Inject constructor(
     // SEARCH_DEBOUNCE_MS before the unfiltered list ever appears. `onStart` re-emits the current
     // value immediately, ahead of collecting the debounced tail; `drop(1)` skips that same
     // value's duplicate replay from `searchQuery` itself so it isn't debounced a second time.
-    // This feeds `albums` only — `uiState.searchQuery` (what the TextField displays) is sourced
+    // This feeds `albums` only `uiState.searchQuery` (what the TextField displays) is sourced
     // from the raw `searchQuery` below instead, so the field reflects every keystroke immediately
     // and doesn't fight the user's cursor while the debounce window is still pending.
     private val debouncedQuery = searchQuery
@@ -57,21 +57,21 @@ class AlbumsViewModel @Inject constructor(
     /**
      * The distinct album group ids available to filter by. Its own `StateFlow` rather than a
      * field on [AlbumsUiState]: it's reference data for the filter chips (which groups currently
-     * exist in the cache), not per-refresh screen state, and changes independently of — and far
-     * less often than — everything [uiState] tracks.
+     * exist in the cache), not per-refresh screen state, and changes independently of and far
+     * less often than everything [uiState] tracks.
      */
     val albumGroups: StateFlow<List<Int>> = repository.observeAlbumGroups()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000), emptyList())
 
-    // Fix (bug #1): the original ViewModel launched its network fetch with
+    // Fix bug the original ViewModel launched its network fetch with
     // `GlobalScope.launch { ... }` (under `@OptIn(DelicateCoroutinesApi::class)`), so the
-    // coroutine outlived the ViewModel — never cancelled by `onCleared()`, still holding a
+    // coroutine outlived the ViewModel never cancelled by `onCleared()`, still holding a
     // reference to the repository after the screen was gone. `viewModelScope` (used throughout
     // this class) ties every coroutine to the ViewModel's lifecycle instead.
     //
-    // Fix (bug #2): the original state was a `MutableSharedFlow` with no replay, so a
-    // collector that (re)subscribed after the single `emit()` had already happened — e.g. right
-    // after a configuration change — would simply never receive a value and the screen would
+    // Fix bug the original state was a `MutableSharedFlow` with no replay, so a
+    // collector that (re)subscribed after the single `emit()` had already happened e.g. right
+    // after a configuration change would simply never receive a value and the screen would
     // stay blank. `stateIn` always has a current value for new collectors, which is exactly the
     // "must survive configuration changes" requirement in the assignment.
     val uiState: StateFlow<AlbumsUiState> = combine(
@@ -103,7 +103,7 @@ class AlbumsViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             isRefreshing.value = true
-            // Fix (bug #3): the original code was `catch (_: Exception) { /* TODO */ }` —
+            // Fix bug the original code was `catch (_: Exception) { /* TODO */ }` 
             // failures were silently dropped, with no loading/error state exposed to the UI at
             // all. A failed refresh is now surfaced as a message, without ever clearing
             // `albums`: whatever was last cached stays on screen.

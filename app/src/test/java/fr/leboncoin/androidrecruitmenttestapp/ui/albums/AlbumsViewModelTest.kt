@@ -20,18 +20,18 @@ import java.io.IOException
 
 /**
  * Replaces the original AlbumsViewModelTest, which called a constructor
- * (`AlbumsViewModel(Logger, repository)`) and read `.value` off a `SharedFlow` — neither exists
+ * (`AlbumsViewModel(Logger, repository)`) and read `.value` off a `SharedFlow` neither exists
  * on the actual API, so it could never have compiled, let alone passed. See bug #4 in
  * ARCHITECTURE.md.
  *
  * `uiState` is a `stateIn(..., SharingStarted.WhileSubscribed(5000), ...)` flow: the upstream
  * `combine(...)` only starts once something subscribes, so every assertion below goes through
- * `uiState.test { awaitItem() }` (Turbine) rather than reading `.value` directly — reading
+ * `uiState.test { awaitItem() }` (Turbine) rather than reading `.value` directly reading
  * `.value` with no active collector would just return the seed `AlbumsUiState()`, not the real
  * state.
  *
  * The class-level `@Before` sets `Dispatchers.Main` to a plain `UnconfinedTestDispatcher()`,
- * which runs coroutines eagerly but has its own independent virtual clock — fine for every test
+ * which runs coroutines eagerly but has its own independent virtual clock fine for every test
  * here except the debounce ones, which construct their own `UnconfinedTestDispatcher(testScheduler)`
  * (sharing `runTest`'s scheduler) so `advanceTimeBy` actually moves the search debounce's timer.
  */
@@ -145,7 +145,7 @@ class AlbumsViewModelTest {
     @Test
     fun `setSearchQuery restricts the list to matching titles, after the debounce settles`() = runTest {
         // This test cares about the debounce's timing, so Main needs to share *this* runTest's
-        // virtual clock — a plain UnconfinedTestDispatcher() (as used by the class-level
+        // virtual clock a plain UnconfinedTestDispatcher() (as used by the class-level
         // @Before) has its own independent clock that advanceTimeBy below would never reach.
         Dispatchers.setMain(UnconfinedTestDispatcher(testScheduler))
         val repository = FakeAlbumRepository(

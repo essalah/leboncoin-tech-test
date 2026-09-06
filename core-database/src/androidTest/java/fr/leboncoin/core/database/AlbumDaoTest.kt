@@ -14,7 +14,7 @@ import org.junit.runner.RunWith
 
 /**
  * Runs against a real, in-memory SQLite database (not a fake) so it also exercises the actual
- * SQL Room generates from the annotations in [AlbumDao] — a pure-Kotlin fake couldn't catch a
+ * SQL Room generates from the annotations in [AlbumDao] a pure-Kotlin fake couldn't catch a
  * typo'd `@Query`. That matters especially for `observeAlbums`, which packs three independent
  * filters (search text, favorites-only, album group) into one hand-written query.
  */
@@ -86,7 +86,7 @@ class AlbumDaoTest {
 
     @Test
     fun upsertAll_replacesTheWholeRow_includingFavoriteFlag() = runTest {
-        // @Upsert replaces the entire row on conflict — it does NOT merge column by column.
+        // @Upsert replaces the entire row on conflict it does NOT merge column by column.
         // This test documents that contract on purpose: it's exactly why
         // AlbumRepositoryImpl.refresh() must read getFavoriteIds() and stamp isFavorite back
         // onto each freshly-mapped entity *before* calling upsertAll, instead of assuming the

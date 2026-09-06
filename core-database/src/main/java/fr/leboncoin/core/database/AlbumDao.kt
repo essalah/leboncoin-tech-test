@@ -14,9 +14,9 @@ interface AlbumDao {
      * filter can all compose in a single SQL call:
      * - `favoritesOnly`: standard Room "optional boolean filter" pattern.
      * - `albumGroup`: `(:albumGroup IS NULL OR albumId = :albumGroup)` is the standard Room
-     *   pattern for an optional filter parameter — passing `null` disables it entirely.
+     *   pattern for an optional filter parameter passing `null` disables it entirely.
      * - `query`: matches the title (substring, case-insensitive) OR the numeric album/track id
-     *   (as text, so "51" finds `Album #51` too) — an empty query disables this clause.
+     *   (as text, so "51" finds `Album #51` too) an empty query disables this clause.
      */
     @Query(
         """
@@ -43,7 +43,7 @@ interface AlbumDao {
 
     /**
      * Ids currently marked favorite. Read by the repository before a network refresh so a
-     * fresh [upsertAll] can carry the flag forward instead of wiping it back to `false` — see
+     * fresh [upsertAll] can carry the flag forward instead of wiping it back to `false` see
      * the note in [fr.leboncoin.data.repository.AlbumRepositoryImpl.refresh].
      */
     @Query("SELECT id FROM albums WHERE isFavorite = 1")

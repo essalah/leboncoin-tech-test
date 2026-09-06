@@ -10,7 +10,7 @@ import fr.leboncoin.androidrecruitmenttestapp.navigation.AppNavHost
 
 /**
  * Fix: the app used to have two launcher Activities (this one and the now-removed
- * `DetailsActivity`, which was wrongly declared with its own `MAIN`/`LAUNCHER` intent-filter —
+ * `DetailsActivity`, which was wrongly declared with its own `MAIN`/`LAUNCHER` intent-filter 
  * see AndroidManifest.xml history). Consolidating to a single Activity hosting a
  * Navigation-Compose graph removes that bug at the root instead of patching the manifest: there
  * is now only one entry point, and it's structurally impossible to navigate to a screen without

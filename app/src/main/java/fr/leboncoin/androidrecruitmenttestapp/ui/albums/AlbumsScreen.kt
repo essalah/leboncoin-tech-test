@@ -36,6 +36,7 @@ import com.adevinta.spark.components.text.Text
 import com.adevinta.spark.components.textfields.TextField
 import fr.leboncoin.androidrecruitmenttestapp.R
 import fr.leboncoin.data.model.Album
+import com.adevinta.spark.components.progress.CircularProgressIndicator
 
 private const val EMPTY_STATE_ILLUSTRATION_ALPHA = 0.6f
 
@@ -49,13 +50,13 @@ fun AlbumsScreen(
     // Fix: replaces `LaunchedEffect(Unit) { viewModel.loadAlbums() }`. Loading is now kicked
     // off once from the ViewModel's `init` block instead of from the Composable, so it isn't
     // re-triggered every time this screen re-enters composition (e.g. navigating back from the
-    // detail screen) — the ViewModel, not the UI, owns "when do we fetch".
+    // detail screen) the ViewModel, not the UI, owns "when do we fetch".
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val albumGroups by viewModel.albumGroups.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Spark's lint rules (spark-lints, run as part of :app:lintDebug) flag raw Material
-    // Composables that have a direct Spark replacement — Snackbar/SnackbarHost among them —
+    // Composables that have a direct Spark replacement Snackbar/SnackbarHost among them 
     // so the error banner goes through Spark's SnackbarHostState instead of a plain
     // `if (error != null) Snackbar(...)`.
     LaunchedEffect(uiState.errorMessage) {
@@ -101,7 +102,7 @@ fun AlbumsScreen(
 
 @Composable
 private fun SearchField(query: String, onQueryChange: (String) -> Unit) {
-    // Spark's own TextField, not Material3's `SearchBar` — same design-system-consistency
+    // Spark's own TextField, not Material3's `SearchBar` same design-system-consistency
     // reason `Text`/`Snackbar` were switched to Spark equivalents earlier.
     TextField(
         value = query,
@@ -173,7 +174,7 @@ private fun AlbumGroupFilterRow(
     if (availableGroups.isEmpty()) return
 
     // LazyRow, not a plain Row: the real dataset can have on the order of a hundred distinct
-    // album groups — a plain Row would measure and lay out every chip whether visible or not.
+    // album groups a plain Row would measure and lay out every chip whether visible or not.
     LazyRow(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -222,7 +223,7 @@ private fun EmptyState(isFiltering: Boolean, showingFavorites: Boolean) {
                     // misleading.
                     isFiltering -> "No albums match your search"
                     showingFavorites -> "You haven't favorited any album yet"
-                    else -> "No albums available — pull down to retry once you're back online"
+                    else -> "No albums available pull down to retry once you're back online"
                 },
             )
         }

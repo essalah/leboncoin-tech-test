@@ -41,7 +41,7 @@ class AlbumRepositoryTest {
         val result = repository.refresh()
 
         // Then the failure is surfaced as a Result, and the previously cached album is still
-        // there — this is the offline-first guarantee the ViewModel relies on to never blank
+        // there this is the offline-first guarantee the ViewModel relies on to never blank
         // the screen on a failed background refresh.
         assertTrue(result.isFailure)
         assertEquals(listOf(1), repository.observeAlbums().first().map { it.id })
@@ -55,7 +55,7 @@ class AlbumRepositoryTest {
         repository.setFavorite(id = 1, isFavorite = true)
 
         // A second refresh re-fetches the same album from the network (a fresh DTO, with no
-        // notion of "favorite" at all) — the repository must still keep it favorited locally.
+        // notion of "favorite" at all) the repository must still keep it favorited locally.
         repository.refresh()
 
         val album = repository.observeAlbum(1).first()

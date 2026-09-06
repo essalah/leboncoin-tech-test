@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
  * Offline-first, single-source-of-truth access to albums.
  *
  * [observeAlbums] and [observeAlbum] always read the local cache (Room) and never touch the
- * network directly — that's what makes the list/detail screens work offline and survive process
+ * network directly that's what makes the list/detail screens work offline and survive process
  * death. [refresh] is the only thing that talks to the network; it just keeps the cache warm.
  * A failed [refresh] therefore never blanks the UI: whatever was last cached stays visible.
  */
